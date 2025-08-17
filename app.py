@@ -186,12 +186,36 @@ class ClassifierApp:
             .tab-nav {
                 background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             }
+            .info-btn {
+                min-width: 40px !important;
+                height: 40px !important;
+                padding: 8px !important;
+                border: 1px solid #e5e7eb !important;
+                background: #f9fafb !important;
+                border-radius: 6px !important;
+            }
+            .info-btn:hover {
+                background: #f3f4f6 !important;
+                border-color: #d1d5db !important;
+            }
+            .close-btn {
+                min-width: 32px !important;
+                height: 32px !important;
+                padding: 4px !important;
+                border: 1px solid #e5e7eb !important;
+                background: #ffffff !important;
+                border-radius: 4px !important;
+            }
+            .close-btn:hover {
+                background: #f9fafb !important;
+                border-color: #d1d5db !important;
+            }
             """
         ) as interface:
             
             gr.Markdown(
                 """
-                # 🤖 LLM Text Classifier
+                # <img src="static/icons/solar--text-field-bold.svg" width="32" height="32" style="display: inline; vertical-align: middle; margin-right: 8px;"> LLM Text Classifier
                 
                 A high-performance microservice for text classification using Google's Gemini API.
                 Supports multiple classification tasks with configurable prompts.
@@ -202,15 +226,89 @@ class ClassifierApp:
             with gr.Tabs():
                 
                 # Single Text Classification Tab
-                with gr.Tab("📝 Single Text Classification"):
+                with gr.Tab("Single Text Classification", icon="static/icons/fluent--slide-text-28-filled.svg"):
                     with gr.Row():
                         with gr.Column(scale=2):
-                            text_input = gr.Textbox(
-                                label="Text to Classify",
-                                placeholder="Enter the text you want to classify...",
-                                lines=5,
-                                max_lines=10
-                            )
+                            with gr.Row():
+                                text_input = gr.Textbox(
+                                    label="Text to Classify",
+                                    placeholder="Enter the text you want to classify...",
+                                    lines=5,
+                                    max_lines=10,
+                                    scale=4
+                                )
+                                with gr.Column(scale=1, min_width=50):
+                                    info_button = gr.Button(
+                                        "", 
+                                        icon="static/icons/lets-icons--info-alt-duotone.svg",
+                                        size="sm", 
+                                        variant="secondary"
+                                    )
+                            
+                            # Usage instructions (initially hidden)
+                            with gr.Row(visible=False) as usage_info:
+                                with gr.Column():
+                                    with gr.Row():
+                                        gr.Markdown("## Usage Instructions")
+                                        close_info_button = gr.Button(
+                                            "", 
+                                            icon="static/icons/lets-icons--close-round-duotone.svg",
+                                            size="sm", 
+                                            variant="secondary"
+                                        )
+                                    
+                                    gr.Markdown(
+                                        """
+### 1. Single Text Classification Tab (what you're seeing)
+
+"Enter the text you want to classify" means you should type or paste any text that you want the AI to analyze. Here are some examples:
+
+#### For Sentiment Analysis (Movie Reviews):
+• **Positive example**: "This movie was absolutely fantastic! Great acting and amazing plot."
+• **Negative example**: "Terrible movie, waste of time and money. Poor acting."
+
+#### For Rating Classification (Product Reviews):
+• **5-star example**: "Excellent product! Works perfectly, highly recommend!"
+• **1-star example**: "Broke after one day, terrible quality."
+• **3-star example**: "Average product, nothing special but does the job."
+
+### 2. How to Use It:
+
+1. Type your text in the text box (any review, comment, or text)
+2. Select a task from the dropdown:
+   • `sentiment` = Classify as positive/negative (like movie reviews)
+   • `rating` = Predict star rating 1-5 (like product reviews)
+3. Click "🚀 Classify"
+4. See the result in JSON format below
+
+### 3. What You'll Get:
+The app will show you:
+• **Prediction**: "positive"/"negative" or "1"/"2"/"3"/"4"/"5"
+• **Response Time**: How long it took
+• **Model**: Which AI model was used (gemini-2.0-flash)
+
+### 4. Try These Examples:
+
+**Copy and paste these into the text box:**
+
+```
+This smartphone is amazing! Battery lasts all day and camera quality is superb.
+```
+*(Try with `rating` task - should predict 4 or 5)*
+
+```
+Worst purchase ever. Product arrived broken and customer service was unhelpful.
+```
+*(Try with `rating` task - should predict 1 or 2)*
+
+```
+I loved this movie! The storyline was captivating and the actors did a brilliant job.
+```
+*(Try with `sentiment` task - should predict "positive")*
+
+The AI is analyzing your text and using prompt engineering to classify it based on the patterns it learned during training!
+                                        """
+                                    )
                             
                             task_dropdown = gr.Dropdown(
                                 choices=task_names,
@@ -218,7 +316,11 @@ class ClassifierApp:
                                 value=task_names[0] if task_names else None
                             )
                             
-                            classify_btn = gr.Button("🚀 Classify", variant="primary")
+                            classify_btn = gr.Button(
+                                "Classify Text", 
+                                icon="static/icons/pepicons-print--play-circle-filled.svg",
+                                variant="primary"
+                            )
                         
                         with gr.Column(scale=1):
                             task_info = gr.Markdown(
@@ -254,7 +356,11 @@ class ClassifierApp:
                                 value=task_names[0] if task_names else None
                             )
                             
-                            batch_classify_btn = gr.Button("🚀 Classify Batch", variant="primary")
+                            batch_classify_btn = gr.Button(
+                                "Classify Batch", 
+                                icon="static/icons/pepicons-print--play-circle-filled.svg",
+                                variant="primary"
+                            )
                         
                         with gr.Column():
                             batch_info = gr.Markdown(
@@ -294,6 +400,22 @@ class ClassifierApp:
                     )
             
             # Event handlers
+            def show_usage_info():
+                return gr.update(visible=True)
+            
+            def hide_usage_info():
+                return gr.update(visible=False)
+            
+            info_button.click(
+                fn=show_usage_info,
+                outputs=[usage_info]
+            )
+            
+            close_info_button.click(
+                fn=hide_usage_info,
+                outputs=[usage_info]
+            )
+            
             task_dropdown.change(
                 fn=self.get_task_info,
                 inputs=[task_dropdown],
