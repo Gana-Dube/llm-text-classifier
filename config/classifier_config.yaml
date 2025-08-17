@@ -1,0 +1,57 @@
+classifier:
+  model_provider: "gemini"
+  model_name: "gemini-2.0-flash"
+  temperature: 0.1
+  max_tokens: 150
+  
+classification_tasks:
+  sentiment:
+    name: "Movie Review Sentiment Analysis"
+    description: "Classify movie reviews as positive or negative (IMDB dataset)"
+    type: "binary"
+    classes: ["positive", "negative"]
+    prompt_template: |
+      You are a sentiment analysis expert. Analyze the following movie review and classify it as either "positive" or "negative".
+      
+      Review: "{text}"
+      
+      Respond with only one word: "positive" or "negative"
+      
+  rating:
+    name: "Amazon Product Review Rating Classification"
+    description: "Classify Amazon product reviews by star rating (1-5 stars)"
+    type: "multi-class"
+    classes: ["1", "2", "3", "4", "5"]
+    prompt_template: |
+      You are a product review rating expert. Analyze the following Amazon product review and predict what star rating (1-5) the reviewer would give.
+      
+      1 star = Very negative, terrible product
+      2 stars = Negative, poor product  
+      3 stars = Neutral, average product
+      4 stars = Positive, good product
+      5 stars = Very positive, excellent product
+      
+      Review: "{text}"
+      
+      Respond with only the number: 1, 2, 3, 4, or 5
+
+api:
+  rate_limit: 60  # requests per minute
+  timeout: 30     # seconds
+  retry_attempts: 3
+  
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+datasets:
+  imdb:
+    file: "data/imdb_IMDB Dataset.csv"
+    text_column: "review"
+    label_column: "sentiment"
+    task: "sentiment"
+  amazon:
+    file: "data/amazon_Reviews.csv" 
+    text_column: "Text"
+    label_column: "Score"
+    task: "rating"
